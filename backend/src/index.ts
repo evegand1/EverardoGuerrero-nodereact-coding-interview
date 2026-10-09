@@ -1,5 +1,7 @@
 import 'reflect-metadata';
-require('dotenv').config();
+import PeopleController from "./controllers/people.controller";
+import dotenv from 'dotenv';
+dotenv.config();
 
 import {
     createExpressServer,
@@ -10,7 +12,7 @@ const port = process.env.PORT || '3001';
 
 const routingControllersOptions: RoutingControllersOptions = {
     routePrefix: '/v1',
-    controllers: [`${__dirname}/controllers/*.controller.*`],
+    controllers: [PeopleController],
     validation: true,
     classTransformer: true,
     cors: true,
