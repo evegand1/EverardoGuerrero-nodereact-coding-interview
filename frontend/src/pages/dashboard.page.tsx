@@ -1,4 +1,4 @@
-import React, { FC, useState, useEffect } from "react";
+import React, { FC, useState, useEffect, useMemo } from "react";
 import { RouteComponentProps } from "@reach/router";
 import { IUserProps } from "../dtos/user.dto";
 import { UserCard } from "../components/users/user-card";
@@ -43,11 +43,22 @@ export const DashboardPage: FC<RouteComponentProps> = () => {
     };
   }, []);
 
-  // 2. INSTANT FILTERING: This runs automatically every time searchTerm changes
-  const filteredUsers = users.filter((user) => {
-    const fullName = `${user.first_name} ${user.last_name}`.toLowerCase();
-    return fullName.includes(searchTerm.toLowerCase().trim());
-  });
+  // 2. INSTANT FILTERING: Changing to useMemo to optimize
+  const filteredUsers = useMemo(() => {
+    const cleanSearchTerm = searchTerm.toLowerCase().trim();
+    
+    // If search is empty, just return the full list
+    if (!cleanSearchTerm) return users;
+
+    return users.filter((user) => {
+      const fullName = `${user.first_name} ${user.last_name}`.toLowerCase();
+      return fullName.includes(cleanSearchTerm);
+    });
+  }, [users, searchTerm]); // Only recalculate when users data or searchTerm changes
+
+  // 2. LIMIT THE RENDERED CARDS to prevent browser lag
+  // Change 50 to whatever number looks good on your screen
+  const displayedUsers = filteredUsers.slice(0, 50);
 
   const clearSearch = () => {
     setSearchTerm('');
@@ -82,8 +93,8 @@ export const DashboardPage: FC<RouteComponentProps> = () => {
 
       {/* Main Content Area */}
       <div style={{ display: "flex", flexWrap: "wrap", gap: "20px" }}>
-        {filteredUsers.length > 0 ? (
-          filteredUsers.map((user) => <UserCard key={user.id} {...user} />)
+        {displayedUsers.length > 0 ? (
+          displayedUsers.map((user) => <UserCard key={user.id} {...user} />)
         ) : (
           <p>No users match your search.</p>
         )}
